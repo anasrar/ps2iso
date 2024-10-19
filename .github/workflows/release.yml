@@ -1,0 +1,51 @@
+name: Build Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release Version"
+        required: true
+        type: string
+        default: "vx.x.x"
+
+jobs:
+  builds:
+    name: Build & Release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          dotnet restore
+          dotnet publish -r win-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true --self-contained true
+          dotnet publish -r linux-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true --self-contained true
+          dotnet publish -r osx-x64 -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true --self-contained true
+          mkdir files
+          cp bin/Release/net8.0/linux-x64/publish/ps2iso files/ps2iso_linux
+          cp bin/Release/net8.0/osx-x64/publish/ps2iso files/ps2iso_osx
+          cp bin/Release/net8.0/win-x64/publish/ps2iso.exe files/ps2iso_win.exe
+
+      - name: Create Release and Upload Assets
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          tag: ${{ inputs.version }}
+          prerelease: true
+          name: ${{ inputs.version }}
+          artifacts: files/*
+
+  del_runs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 30
+          keep_minimum_runs: 3
