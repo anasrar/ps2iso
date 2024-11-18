@@ -94,11 +94,15 @@ switch (argz[1])
 
         foreach (var entry in m.Entries)
         {
+            string normalizeEntryPath = Path.DirectorySeparatorChar.ToString() == @"\"
+                                            ? entry
+                                            : entry.Replace(@"/", @"\");
             Console.WriteLine($"Add {entry}");
-            builder.AddFile(entry, Path.Combine(parentMetadataPath, "FILES", entry));
+            builder.AddFile(normalizeEntryPath,
+                            Path.Combine(parentMetadataPath, "FILES", entry));
         }
 
-        Console.WriteLine("Build ISO");
+        Console.WriteLine("Build ISO, Please Wait...");
         builder.Build(Path.Combine(parentMetadataPath, "OUTPUT.iso"));
 
         break;
