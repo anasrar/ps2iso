@@ -38,7 +38,7 @@ switch (argz[1])
             string unpackPath = Path.Combine(parentIsoPath, $"UNPACK_{isoFileName}");
             string filesPath = Path.Combine(unpackPath, "FILES");
 
-            Directory.CreateDirectory(unpackPath);
+            Directory.CreateDirectory(filesPath);
 
             Metadata metadata = new Metadata
             {
